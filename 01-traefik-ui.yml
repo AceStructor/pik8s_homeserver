@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-ui
+  namespace: monitoring
+  annotations:
+    traefik.ingress.kubernetes.io/auth-type: "basic"
+    traefik.ingress.kubernetes.io/auth-secret: "secret"
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
+  externalIPs:
+    - 172.56.4.112
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-web-ui
+  namespace: monitoring
+  annotations:
+    traefik.ingress.kubernetes.io/auth-type: "basic"
+    traefik.ingress.kubernetes.io/auth-secret: "secret"
+spec:
+  rules:
+  - host: my.domain.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: traefik-web-ui
+          servicePort: https
+  tls:
+  - secretName: traefik-ui-tls-cert
